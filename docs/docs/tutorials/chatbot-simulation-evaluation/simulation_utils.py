@@ -1,13 +1,16 @@
 import functools
 from typing import Annotated, Any, Callable, Dict, List, Optional, Union
-from langchain_community.adapters.openai import convert_message_to_dict
+
 from langchain_core.messages import AIMessage, AnyMessage, BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import Runnable, RunnableLambda
 from langchain_core.runnables import chain as as_runnable
 from langchain_openai import ChatOpenAI
 from typing_extensions import TypedDict
-from langgraph.graph import END, StateGraph, START
+
+from langgraph.graph import END, StateGraph
+from langchain_community.adapters.openai import convert_message_to_dict
+
 
 def langchain_to_openai_messages(messages: List[BaseMessage]):
     """
@@ -113,7 +116,7 @@ def create_chat_simulator(
         should_continue or functools.partial(_should_continue, max_turns=max_turns),
     )
     # If your dataset has a 'leading question/input', then we route first to the assistant, otherwise, we let the user take the lead.
-    graph_builder.add_edge(START, "assistant" if input_key is not None else "user")
+    graph_builder.set_entry_point("assistant" if input_key is not None else "user")
 
     return (
         RunnableLambda(_prepare_example).bind(input_key=input_key)
